@@ -5,17 +5,23 @@
 #include <QDebug>
 
 
-ServerDemo::ServerDemo(QObject *parent) : QObject(parent)
+ServerDemo::ServerDemo(QObject *parent) : QObject(parent), m_handler(NULL)
 {
     connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+    qDebug() << "ServerDemo::ServerDemo()";
+}
 
+void ServerDemo::setHandler(TxtMsgHandler *handler)
+{
+    m_handler = handler;
 }
 
 void ServerDemo::onNewConnection()
 {
-    qDebug() << "onNewConnection";
-
+    qDebug() << "ServerDemo::onNewConnection()";
     QTcpSocket *tcp = m_server.nextPendingConnection();
+    TestMsgAssembler* assembler = new TestMsgAssembler();
+    m_map.insert(tcp, assembler);
 
     connect(tcp, SIGNAL(connected()), this, SLOT(onConnected()));
     connect(tcp, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -26,8 +32,9 @@ void ServerDemo::onNewConnection()
 bool ServerDemo::start(int port)
 {
     bool ret = true;
-    if (m_server.isListening())
+    if (!m_server.isListening())
     {
+        qDebug() << "ServerDemo::start(int port)";
         ret = m_server.listen(QHostAddress("127.0.0.1"), port);
     }
 
@@ -44,21 +51,18 @@ void ServerDemo::stop()
 
 void ServerDemo::onConnected()
 {
-    QTcpSocket *tcp = dynamic_cast<QTcpSocket*>(sender());
 
-    if(tcp != NULL)
-    {
-        qDebug() << "onConnected()";
-        qDebug() << "Local Address" << tcp->localAddress();
-        qDebug() <<"Local Port" << tcp->localPort();
-    }
 
 }
 
 
 void ServerDemo::onDisconnected()
 {
-    qDebug() << "onDisconnected()";
+    QTcpSocket* tcp = dynamic_cast<QTcpSocket*>(sender());
+    if(tcp != NULL)
+    {
+        delete m_map.take(tcp);
+    }
 }
 
 void ServerDemo::onDataReady()
@@ -67,16 +71,28 @@ void ServerDemo::onDataReady()
 
     char buf[256] = {0};
 
+    int len = 0;
+
     if(tcp != NULL)
     {
-        qDebug() << "onDataReady:" << tcp->read(buf, sizeof(buf) - 1);
-        qDebug() << "Data:" << buf;
+        TestMsgAssembler *assembler = m_map.value(tcp);
+        while ((len = tcp->read(buf, sizeof(buf))) > 0)
+        {
+            QSharedPointer<TextMessage> ptm = (assembler != NULL) ? assembler->assemble(buf, len) : NULL;
+
+            if((ptm != NULL) && (m_handler != NULL))
+            {
+                qDebug() << "ServerDemo::onDataReady()";
+                m_handler->handle(*tcp, *ptm);
+            }
+        }
     }
 }
 
 void ServerDemo::onBytesWritten(qint64 bytes)
 {
-    qDebug() << "onBytesWritten" << bytes;
+//    qDebug() << "onBytesWritten" << bytes;
+    (void)bytes;
 }
 
 ServerDemo::~ServerDemo()
@@ -89,5 +105,11 @@ ServerDemo::~ServerDemo()
         {
             tcp->close();
         }
+    }
+
+    const QList<TestMsgAssembler*>& al = m_map.values();
+    for(int i = 0; i<al.length(); i++)
+    {
+        delete al.at(i);
     }
 }

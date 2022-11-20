@@ -19,10 +19,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     Clientdemo.cpp \
-    ServerDemo.cpp
+    ServerDemo.cpp \
+    TestMsgAssembler.cpp \
+    TextMessage.cpp
 
 HEADERS += \
     Clientdemo.h \
-    ServerDemo.h
+    ServerDemo.h \
+    TestMsgAssembler.h \
+    TextMessage.h \
+    txtmeghandler.h
 
 

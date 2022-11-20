@@ -3,11 +3,16 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include "TextMessage.h"
+#include "TestMsgAssembler.h"
+#include "txtmeghandler.h"
+
 class ClientDemo : public QObject
 {
     Q_OBJECT
     QTcpSocket m_client;
-
+    TestMsgAssembler m_assembler;
+    TxtMsgHandler* m_handler;
 protected slots:
     void onConnected();
     void onDisconnected();
@@ -16,9 +21,10 @@ protected slots:
 
 public:
     ClientDemo(QObject* parent = NULL);
-    void connectTo(QString ip, int port);
-    qint64 send(const char* data, int len);
+    bool connectTo(QString ip, int port);
+    qint64 send(TextMessage &message);
     qint64 available();
+    void setHandler(TxtMsgHandler* handler);
     void close();
 };
 

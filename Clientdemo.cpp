@@ -2,8 +2,9 @@
 #include <QHostAddress>
 #include <QDebug>
 
-ClientDemo::ClientDemo(QObject* parent):QObject(parent)
+ClientDemo::ClientDemo(QObject* parent):QObject(parent),m_handler(NULL)
 {
+    qDebug() << "ClientDemo::ClientDemo";
     connect(&m_client, SIGNAL(connected()), this, SLOT(onConnected()));
     connect(&m_client, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     connect(&m_client, SIGNAL(readyRead()), this, SLOT(onDataReady()));
@@ -13,38 +14,55 @@ ClientDemo::ClientDemo(QObject* parent):QObject(parent)
 
 void ClientDemo::onConnected()
 {
-    qDebug() << "onConnected()";
-    qDebug() << "Local Address" << m_client.localAddress();
-    qDebug() <<"Local Port" << m_client.localPort();
+//    qDebug() << "onConnected()";
+//    qDebug() << "Local Address" << m_client.localAddress();
+//    qDebug() <<"Local Port" << m_client.localPort();
 }
 
-
+void ClientDemo::setHandler(TxtMsgHandler* handler)
+{
+    m_handler = handler;
+}
 void ClientDemo::onDisconnected()
 {
-    qDebug() << "onDisconnected()";
+    m_assembler.reset();
 }
 
 void ClientDemo::onDataReady()
 {
     char buf[256] = {0};
 
-    qDebug() << "onDataReady:" << m_client.read(buf, sizeof(buf) - 1);
-    qDebug() << "Data:" << buf;
+    int len = 0;
+
+    while ((len = m_client.read(buf, sizeof(buf))) > 0 )
+    {
+        QSharedPointer<TextMessage> ptm = m_assembler.assemble(buf, len);
+
+        if((ptm != NULL) && (m_handler != NULL))
+        {
+            qDebug() << "ClientDemo::onDataReady()";
+            m_handler->handle(m_client, *ptm);
+        }
+    }
 }
 
 void ClientDemo::onBytesWritten(qint64 bytes)
 {
-    qDebug() << "onBytesWritten:" << bytes;
+//    qDebug() << "onBytesWritten:" << bytes;
+    (void)bytes;
 }
 
-void ClientDemo::connectTo(QString ip, int port)
+bool ClientDemo::connectTo(QString ip, int port)
 {
     m_client.connectToHost(ip, port);
+    return m_client.waitForConnected();
 }
 
-qint64 ClientDemo::send(const char* data, int len)
+qint64 ClientDemo::send(TextMessage& message)
 {
-    return m_client.write(data, len);
+    QByteArray ba = message.serialize();
+
+    return m_client.write(ba.data(), ba.length());
 }
 
 qint64 ClientDemo::available()
