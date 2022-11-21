@@ -14,9 +14,11 @@ ClientDemo::ClientDemo(QObject* parent):QObject(parent),m_handler(NULL)
 
 void ClientDemo::onConnected()
 {
-//    qDebug() << "onConnected()";
-//    qDebug() << "Local Address" << m_client.localAddress();
-//    qDebug() <<"Local Port" << m_client.localPort();
+    if (m_handler != NULL)
+    {
+        TextMessage conn("CONN",m_client.peerAddress().toString()+":"+QString::number(m_client.peerPort()));
+        m_handler->handle(m_client,conn);
+    }
 }
 
 void ClientDemo::setHandler(TxtMsgHandler* handler)
@@ -26,6 +28,11 @@ void ClientDemo::setHandler(TxtMsgHandler* handler)
 void ClientDemo::onDisconnected()
 {
     m_assembler.reset();
+    if(m_handler != NULL)
+    {
+        TextMessage dscn("DSCN", "");
+        m_handler->handle(m_client, dscn);
+    }
 }
 
 void ClientDemo::onDataReady()

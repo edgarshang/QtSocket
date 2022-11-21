@@ -6,9 +6,9 @@
 MainWin::MainWin(QWidget *parent)
     : QWidget(parent), loginDlg(this)
 {
+    initMember();
     initMsgGrpBx();
     initInputGrpBx();
-
     connectSlots();
 
     vMainLayout.setSpacing(10);
@@ -59,6 +59,15 @@ void MainWin::initInputGrpBx()
     inputGrpBx.setFixedHeight(200);
     inputGrpBx.setLayout(gl);
     inputGrpBx.setTitle("用户名");
+}
+
+void MainWin::setCtrlEnable(bool enabled)
+{
+
+    inputEdit.setEnabled(enabled);
+    statusLbl.setText(enabled ? "状态：连接成功" : "状态：未登录");
+    logInOutBtn.setText(enabled ? "退出" : "登陆");
+    sendBtn.setEnabled(enabled);
 }
 
 MainWin::~MainWin()
