@@ -43,12 +43,16 @@ void ClientDemo::onDataReady()
 
     while ((len = m_client.read(buf, sizeof(buf))) > 0 )
     {
-        QSharedPointer<TextMessage> ptm = m_assembler.assemble(buf, len);
+        QSharedPointer<TextMessage> ptm = NULL;
+        m_assembler.prepare(buf, len);
 
-        if((ptm != NULL) && (m_handler != NULL))
+        while ((ptm = m_assembler.assemble()) != NULL)
         {
-            qDebug() << "ClientDemo::onDataReady()";
-            m_handler->handle(m_client, *ptm);
+            if(m_handler != NULL)
+            {
+                qDebug() << "ClientDemo::onDataReady()";
+                m_handler->handle(m_client, *ptm);
+            }
         }
     }
 }

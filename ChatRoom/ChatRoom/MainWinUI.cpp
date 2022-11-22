@@ -50,9 +50,9 @@ void MainWin::initInputGrpBx()
     inputEdit.setFixedHeight(100);
     inputEdit.setEnabled(false);
     statusLbl.setText("状态：未登录");
-    logInOutBtn.setFixedHeight(100);
+    logInOutBtn.setFixedHeight(50);
     logInOutBtn.setText("登陆");
-    sendBtn.setFixedHeight(100);
+    sendBtn.setFixedHeight(50);
     sendBtn.setText("发送");
     sendBtn.setEnabled(false);
 

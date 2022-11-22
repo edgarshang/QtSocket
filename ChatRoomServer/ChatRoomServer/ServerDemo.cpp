@@ -90,12 +90,19 @@ void ServerDemo::onDataReady()
         TestMsgAssembler *assembler = m_map.value(tcp);
         while ((len = tcp->read(buf, sizeof(buf))) > 0)
         {
-            QSharedPointer<TextMessage> ptm = (assembler != NULL) ? assembler->assemble(buf, len) : NULL;
-
-            if((ptm != NULL) && (m_handler != NULL))
+            if( assembler != NULL )
             {
-                qDebug() << "ServerDemo::onDataReady()";
-                m_handler->handle(*tcp, *ptm);
+                QSharedPointer<TextMessage> ptm = NULL;
+
+                assembler->prepare(buf, len);
+
+                while((ptm = assembler->assemble()) != NULL)
+                {
+                    if(m_handler != NULL)
+                    {
+                        m_handler->handle(*tcp, *ptm);
+                    }
+                }
             }
         }
     }
