@@ -14,9 +14,14 @@ class ServerHandler : public TxtMsgHandler
         QString id;
         QString pwd;
         QTcpSocket* socket;
+    public:
+        Node():id(""), pwd(""), socket(NULL)
+        {
+
+        }
     };
 
-    QList<Node> m_nodeList;
+    QList<Node*> m_nodeList;
 public:
     ServerHandler();
     void handle(QTcpSocket& obj, TextMessage& message);

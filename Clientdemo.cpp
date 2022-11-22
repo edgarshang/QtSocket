@@ -85,3 +85,8 @@ void ClientDemo::close()
 {
     m_client.close();
 }
+
+bool ClientDemo::isValid()
+{
+      return m_client.isValid();
+}

@@ -25,6 +25,7 @@ public:
     qint64 send(TextMessage &message);
     qint64 available();
     void setHandler(TxtMsgHandler* handler);
+    bool isValid();
     void close();
 };
 

@@ -72,5 +72,5 @@ void MainWin::setCtrlEnable(bool enabled)
 
 MainWin::~MainWin()
 {
-
+    m_client.close();
 }
