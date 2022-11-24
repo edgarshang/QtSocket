@@ -9,11 +9,18 @@ void MainWin::initMember()
     m_handlerMap.insert("DSCN", DSCN_Handler);
     m_handlerMap.insert("LIOK", LIOK_Handler);
     m_handlerMap.insert("LIER", LIER_Handler);
+    m_handlerMap.insert("MSGA", MSGA_Handler);
 }
 
 void MainWin::sendBtnClicked()
 {
+    QString text = inputGrpBx.title() + ":\n" + "   " + inputEdit.text() + "\n";
+    TextMessage tm("MSGA", text);
 
+    if( m_client.send(tm) )
+    {
+        inputEdit.clear();
+    }
 }
 void MainWin::logInOutBtnClicked()
 {
@@ -49,6 +56,11 @@ void MainWin::handle(QTcpSocket &obj, TextMessage &message)
         MSGHandler handler = m_handlerMap.value(message.type());
         (this->*handler)(obj, message);
     }
+}
+
+void MainWin::MSGA_Handler(QTcpSocket& obj, TextMessage& message)
+{
+    msgEditor.appendPlainText(message.data());
 }
 
 void MainWin::CONN_Handler(QTcpSocket& obj, TextMessage& message)

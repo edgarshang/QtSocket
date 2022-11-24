@@ -44,6 +44,7 @@ class MainWin : public QWidget, public TxtMsgHandler
     void DSCN_Handler(QTcpSocket& obj, TextMessage& message);
     void LIOK_Handler(QTcpSocket& obj, TextMessage& message);
     void LIER_Handler(QTcpSocket& obj, TextMessage& message);
+    void MSGA_Handler(QTcpSocket& obj, TextMessage& message);
 private slots:
     void sendBtnClicked();
     void logInOutBtnClicked();

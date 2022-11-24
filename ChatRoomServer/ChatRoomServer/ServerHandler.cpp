@@ -5,6 +5,7 @@ ServerHandler::ServerHandler()
     m_handlerMap.insert("CONN", CONN_Handler);
     m_handlerMap.insert("DSCN", DSCN_Handler);
     m_handlerMap.insert("LGIN", LGIN_Handler);
+    m_handlerMap.insert("MSGA", MSGA_Handler);
 }
 
 void ServerHandler::handle(QTcpSocket& obj, TextMessage& message)
@@ -16,13 +17,36 @@ void ServerHandler::handle(QTcpSocket& obj, TextMessage& message)
     }
 }
 
+void ServerHandler::MSGA_Handler(QTcpSocket& obj, TextMessage& message)
+{
+    const QByteArray& ba = message.serialize();
+    for(int i = 0; i < m_nodeList.length(); i++)
+    {
+        Node* n = m_nodeList.at(i);
+
+        if(n->socket != NULL)
+        {
+            n->socket->write(ba);
+        }
+    }
+}
+
 void ServerHandler::CONN_Handler(QTcpSocket& obj, TextMessage& message)
 {
 
 }
 void ServerHandler::DSCN_Handler(QTcpSocket& obj, TextMessage& message)
 {
+    for(int i = 0; i < m_nodeList.length(); i++)
+    {
+        Node* n = m_nodeList.at(i);
 
+        if(n->socket == &obj)
+        {
+            n->socket = NULL;
+            break;
+        }
+    }
 }
 void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
 {

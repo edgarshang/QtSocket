@@ -68,6 +68,10 @@ void MainWin::setCtrlEnable(bool enabled)
     statusLbl.setText(enabled ? "状态：连接成功" : "状态：未登录");
     logInOutBtn.setText(enabled ? "退出" : "登陆");
     sendBtn.setEnabled(enabled);
+    if( !enabled )
+    {
+        msgEditor.clear();
+    }
 }
 
 MainWin::~MainWin()
