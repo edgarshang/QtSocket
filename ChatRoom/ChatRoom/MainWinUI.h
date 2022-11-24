@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QLabel>
+#include <QMap>
 #include "QLoginDialog.h"
 #include "../../Clientdemo.h"
 #include "../../txtmeghandler.h"
@@ -16,6 +17,9 @@
 class MainWin : public QWidget, public TxtMsgHandler
 {
     Q_OBJECT
+
+    typedef void(MainWin::*MSGHandler)(QTcpSocket&, TextMessage&);
+
     QVBoxLayout vMainLayout;
     QGroupBox msgGrapBx;
     QGroupBox inputGrpBx;
@@ -27,12 +31,19 @@ class MainWin : public QWidget, public TxtMsgHandler
     QLoginDialog loginDlg;
 
     ClientDemo m_client;
+
+    QMap<QString, MSGHandler> m_handlerMap;
     void initMember();
     void initMsgGrpBx();
     void initInputGrpBx();
     void connectSlots();
 
     void setCtrlEnable(bool enabled);
+
+    void CONN_Handler(QTcpSocket& obj, TextMessage& message);
+    void DSCN_Handler(QTcpSocket& obj, TextMessage& message);
+    void LIOK_Handler(QTcpSocket& obj, TextMessage& message);
+    void LIER_Handler(QTcpSocket& obj, TextMessage& message);
 private slots:
     void sendBtnClicked();
     void logInOutBtnClicked();
