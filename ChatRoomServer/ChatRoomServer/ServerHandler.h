@@ -26,10 +26,15 @@ class ServerHandler : public TxtMsgHandler
     QList<Node*> m_nodeList;
     QMap<QString, MSGHandler> m_handlerMap;
 
-    void CONN_Handler(QTcpSocket& obj, TextMessage&);
-    void DSCN_Handler(QTcpSocket& obj, TextMessage&);
-    void LGIN_Handler(QTcpSocket& obj, TextMessage&);
-    void MSGA_Handler(QTcpSocket& obj, TextMessage&);
+    QString getOnlineUserID();
+    void sentToAllOnlineUser(TextMessage&);
+
+    void CONN_Handler(QTcpSocket&, TextMessage&);
+    void DSCN_Handler(QTcpSocket&, TextMessage&);
+    void LGIN_Handler(QTcpSocket&, TextMessage&);
+    void MSGA_Handler(QTcpSocket&, TextMessage&);
+    void MSGP_Handler(QTcpSocket&, TextMessage&);
+
 public:
     ServerHandler();
     void handle(QTcpSocket& obj, TextMessage& message);

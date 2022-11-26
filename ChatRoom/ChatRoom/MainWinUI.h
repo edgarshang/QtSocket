@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
+#include <QListWidget>
 #include <QPlainTextEdit>
 #include <QLineEdit>
 #include <QPushButton>
@@ -22,6 +23,7 @@ class MainWin : public QWidget, public TxtMsgHandler
 
     QVBoxLayout vMainLayout;
     QGroupBox msgGrapBx;
+    QListWidget listWidget;
     QGroupBox inputGrpBx;
     QPlainTextEdit msgEditor;
     QLineEdit inputEdit;
@@ -39,12 +41,14 @@ class MainWin : public QWidget, public TxtMsgHandler
     void connectSlots();
 
     void setCtrlEnable(bool enabled);
+    QString getCheckedUserId();
 
     void CONN_Handler(QTcpSocket& obj, TextMessage& message);
     void DSCN_Handler(QTcpSocket& obj, TextMessage& message);
     void LIOK_Handler(QTcpSocket& obj, TextMessage& message);
     void LIER_Handler(QTcpSocket& obj, TextMessage& message);
     void MSGA_Handler(QTcpSocket& obj, TextMessage& message);
+    void USER_Handler(QTcpSocket& obj, TextMessage& message);
 private slots:
     void sendBtnClicked();
     void logInOutBtnClicked();

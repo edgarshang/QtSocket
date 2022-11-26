@@ -2,22 +2,39 @@
 #include <QDebug>
 ServerHandler::ServerHandler()
 {
-    m_handlerMap.insert("CONN", CONN_Handler);
-    m_handlerMap.insert("DSCN", DSCN_Handler);
-    m_handlerMap.insert("LGIN", LGIN_Handler);
-    m_handlerMap.insert("MSGA", MSGA_Handler);
+    #define MapToHandler(MSG) m_handlerMap.insert(#MSG, MSG##_Handler)
+
+    MapToHandler(CONN);
+    MapToHandler(DSCN);
+    MapToHandler(LGIN);
+    MapToHandler(MSGA);
+    MapToHandler(MSGP);
+//    m_handlerMap.insert("CONN", CONN_Handler);
+//    m_handlerMap.insert("DSCN", DSCN_Handler);
+//    m_handlerMap.insert("LGIN", LGIN_Handler);
+//    m_handlerMap.insert("MSGA", MSGA_Handler);
+//    m_handlerMap.insert("MSGP", MSGP_Handler);
 }
 
-void ServerHandler::handle(QTcpSocket& obj, TextMessage& message)
+QString ServerHandler::getOnlineUserID()
 {
-    if (m_handlerMap.contains(message.type()) )
+    QString ret = "";
+
+    for(int i = 0; i < m_nodeList.length(); i++)
     {
-        MSGHandler handler = m_handlerMap.value(message.type());
-        (this->*handler)(obj, message);
+        Node* n = m_nodeList.at(i);
+
+        if( n->socket != NULL )
+        {
+            ret += n->id + '\r';
+        }
+
     }
+
+    return ret;
 }
 
-void ServerHandler::MSGA_Handler(QTcpSocket& obj, TextMessage& message)
+void ServerHandler::sentToAllOnlineUser(TextMessage& message)
 {
     const QByteArray& ba = message.serialize();
     for(int i = 0; i < m_nodeList.length(); i++)
@@ -29,6 +46,42 @@ void ServerHandler::MSGA_Handler(QTcpSocket& obj, TextMessage& message)
             n->socket->write(ba);
         }
     }
+}
+
+void ServerHandler::handle(QTcpSocket& obj, TextMessage& message)
+{
+    if (m_handlerMap.contains(message.type()) )
+    {
+        MSGHandler handler = m_handlerMap.value(message.type());
+        (this->*handler)(obj, message);
+    }
+}
+
+void ServerHandler::MSGP_Handler(QTcpSocket& obj, TextMessage& message)
+{
+    QStringList tl = message.data().split("\r", QString::SkipEmptyParts);
+    const QByteArray& ba = TextMessage("MSGA", tl.last()).serialize();
+
+
+    tl.removeLast();
+
+    for( int i = 0; i < tl.length(); i++ )
+    {
+        for( int j = 0; j < m_nodeList.length(); j++ )
+        {
+            Node* n = m_nodeList.at(j);
+
+            if((tl[i] == n->id) && (n->socket != NULL))
+            {
+                n->socket->write(ba);
+            }
+        }
+    }
+}
+
+void ServerHandler::MSGA_Handler(QTcpSocket& obj, TextMessage& message)
+{
+    sentToAllOnlineUser(message);
 }
 
 void ServerHandler::CONN_Handler(QTcpSocket& obj, TextMessage& message)
@@ -47,6 +100,9 @@ void ServerHandler::DSCN_Handler(QTcpSocket& obj, TextMessage& message)
             break;
         }
     }
+
+    TextMessage tm("USER", getOnlineUserID());
+    sentToAllOnlineUser(tm);
 }
 void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
 {
@@ -101,4 +157,10 @@ void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
     }
 
     obj.write(TextMessage(result, id).serialize());
+
+    if( result == "LIOK")
+    {
+        TextMessage tm("USER", getOnlineUserID());
+        sentToAllOnlineUser(tm);
+    }
 }

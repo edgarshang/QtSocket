@@ -32,8 +32,12 @@ void MainWin::initMsgGrpBx()
     QHBoxLayout *hbl = new QHBoxLayout();
 
     hbl->setContentsMargins(2,5,2,2);
-    hbl->addWidget(&msgEditor);
+    hbl->addWidget(&msgEditor, 7);
+
+    hbl->addWidget(&listWidget, 3);
     msgEditor.setReadOnly(true);
+    msgEditor.setFocusPolicy(Qt::NoFocus);
+    listWidget.setFocusPolicy(Qt::NoFocus);
     msgGrapBx.setLayout(hbl);
     msgGrapBx.setTitle("聊天消息");
 }
@@ -71,6 +75,11 @@ void MainWin::setCtrlEnable(bool enabled)
     if( !enabled )
     {
         msgEditor.clear();
+        listWidget.clear();
+        inputEdit.clear();
+    }else
+    {
+        inputEdit.setFocus();
     }
 }
 
