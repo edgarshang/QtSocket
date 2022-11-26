@@ -72,7 +72,6 @@ void MainWin::listWidgetMenuClicked()
 
         if( sl.length() > 0 )
         {
-            qDebug() << "this is =================";
             QString user = sl.at(0)->text();
             QString tip = "确认对聊天成员 [ " + user + " ] 进行" + act->text() + "操作吗?";
 
