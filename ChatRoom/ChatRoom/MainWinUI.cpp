@@ -4,11 +4,12 @@
 
 
 MainWin::MainWin(QWidget *parent)
-    : QWidget(parent), loginDlg(this)
+    : QWidget(parent), loginDlg(this), m_level("")
 {
     initMember();
     initMsgGrpBx();
     initInputGrpBx();
+    initListWidgetMenu();
     connectSlots();
 
     vMainLayout.setSpacing(10);
@@ -25,6 +26,7 @@ void MainWin::connectSlots()
 {
     connect(&sendBtn,SIGNAL(clicked(bool)), this, SLOT(sendBtnClicked()));
     connect(&logInOutBtn, SIGNAL(clicked(bool)), this, SLOT(logInOutBtnClicked()));
+    connect(&listWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(listWidgetContextMenu(QPoint)));
 }
 
 void MainWin::initMsgGrpBx()
@@ -38,6 +40,7 @@ void MainWin::initMsgGrpBx()
     msgEditor.setReadOnly(true);
     msgEditor.setFocusPolicy(Qt::NoFocus);
     listWidget.setFocusPolicy(Qt::NoFocus);
+    listWidget.setContextMenuPolicy(Qt::CustomContextMenu);
     msgGrapBx.setLayout(hbl);
     msgGrapBx.setTitle("聊天消息");
 }
@@ -63,6 +66,21 @@ void MainWin::initInputGrpBx()
     inputGrpBx.setFixedHeight(200);
     inputGrpBx.setLayout(gl);
     inputGrpBx.setTitle("用户名");
+}
+
+void MainWin::initListWidgetMenu()
+{
+    QAction* act = NULL;
+
+    act = listWidgetMenu.addAction("禁言", this, SLOT(listWidgetMenuClicked()));
+    act->setObjectName("silent");
+
+    act = listWidgetMenu.addAction("恢复", this, SLOT(listWidgetMenuClicked()));
+    act->setObjectName("recover");
+
+    listWidgetMenu.addSeparator();
+    act = listWidgetMenu.addAction("封账号", this, SLOT(listWidgetMenuClicked()));
+    act->setObjectName("kick");
 }
 
 void MainWin::setCtrlEnable(bool enabled)

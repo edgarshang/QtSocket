@@ -9,11 +9,16 @@ ServerHandler::ServerHandler()
     MapToHandler(LGIN);
     MapToHandler(MSGA);
     MapToHandler(MSGP);
-//    m_handlerMap.insert("CONN", CONN_Handler);
-//    m_handlerMap.insert("DSCN", DSCN_Handler);
-//    m_handlerMap.insert("LGIN", LGIN_Handler);
-//    m_handlerMap.insert("MSGA", MSGA_Handler);
-//    m_handlerMap.insert("MSGP", MSGP_Handler);
+    MapToHandler(ADMN);
+
+    static Node admin;
+
+    admin.id = "Admin";
+    admin.pwd = "dt0919";
+    admin.level = "admin";
+
+    m_nodeList.append(&admin);
+
 }
 
 QString ServerHandler::getOnlineUserID()
@@ -111,6 +116,8 @@ void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
     QString id = data.mid(0, index);
     QString pwd = data.mid(index+1);
     QString result = "";
+    QString level = "";
+    QString status = "";
 
     index = -1;
 
@@ -136,6 +143,8 @@ void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
             m_nodeList.append(newNode);
 
             result = "LIOK";
+            status = newNode->status;
+            level = newNode->level;
         }
         else
         {
@@ -150,17 +159,38 @@ void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
             n->socket = &obj;
 
             result = "LIOK";
+            status = n->status;
+            level = n->level;
         }else
         {
             result = "LIER";
         }
     }
 
-    obj.write(TextMessage(result, id).serialize());
+    obj.write(TextMessage(result, id + '\r' + status + '\r' + level).serialize());
 
     if( result == "LIOK")
     {
         TextMessage tm("USER", getOnlineUserID());
         sentToAllOnlineUser(tm);
+    }
+}
+
+void ServerHandler::ADMN_Handler(QTcpSocket& obj, TextMessage& message)
+{
+    QStringList data = message.data().split("\r", QString::SkipEmptyParts);
+    QString op = data[0];
+    QString id = data[1];
+
+    for( int i = 0; i < m_nodeList.length(); i++ )
+    {
+        Node* n = m_nodeList.at(i);
+
+        if( (id == n->id) && (n->socket != NULL) && (n->level == "user"))
+        {
+            n->socket->write(TextMessage("CTRL", op).serialize());
+            n->status = op;
+            break;
+        }
     }
 }

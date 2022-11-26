@@ -11,6 +11,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QMap>
+#include <QMenu>
 #include "QLoginDialog.h"
 #include "../../Clientdemo.h"
 #include "../../txtmeghandler.h"
@@ -24,6 +25,7 @@ class MainWin : public QWidget, public TxtMsgHandler
     QVBoxLayout vMainLayout;
     QGroupBox msgGrapBx;
     QListWidget listWidget;
+    QMenu listWidgetMenu;
     QGroupBox inputGrpBx;
     QPlainTextEdit msgEditor;
     QLineEdit inputEdit;
@@ -33,11 +35,12 @@ class MainWin : public QWidget, public TxtMsgHandler
     QLoginDialog loginDlg;
 
     ClientDemo m_client;
-
+    QString m_level;
     QMap<QString, MSGHandler> m_handlerMap;
     void initMember();
     void initMsgGrpBx();
     void initInputGrpBx();
+    void initListWidgetMenu();
     void connectSlots();
 
     void setCtrlEnable(bool enabled);
@@ -49,9 +52,12 @@ class MainWin : public QWidget, public TxtMsgHandler
     void LIER_Handler(QTcpSocket& obj, TextMessage& message);
     void MSGA_Handler(QTcpSocket& obj, TextMessage& message);
     void USER_Handler(QTcpSocket& obj, TextMessage& message);
+    void CTRL_Handler(QTcpSocket& obj, TextMessage& message);
 private slots:
     void sendBtnClicked();
     void logInOutBtnClicked();
+    void listWidgetMenuClicked();
+    void listWidgetContextMenu(const QPoint&);
 
 public:
     MainWin(QWidget *parent = 0);

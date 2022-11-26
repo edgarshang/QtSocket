@@ -14,6 +14,7 @@ void MainWin::initMember()
     MapToHandler(LIER);
     MapToHandler(MSGA);
     MapToHandler(USER);
+    MapToHandler(CTRL);
 
 }
 
@@ -60,13 +61,41 @@ void MainWin::sendBtnClicked()
         }
     }
 
-//    QString text = inputGrpBx.title() + ":\n" + "   " + inputEdit.text() + "\n";
-//    TextMessage tm("MSGA", text);
+}
 
-//    if( m_client.send(tm) )
-//    {
-//        inputEdit.clear();
-//    }
+void MainWin::listWidgetMenuClicked()
+{
+    QAction* act = dynamic_cast<QAction*>(sender());
+    if( act != NULL)
+    {
+        const QList<QListWidgetItem*>& sl = listWidget.selectedItems();
+
+        if( sl.length() > 0 )
+        {
+            qDebug() << "this is =================";
+            QString user = sl.at(0)->text();
+            QString tip = "确认对聊天成员 [ " + user + " ] 进行" + act->text() + "操作吗?";
+
+            if( QMessageBox::question(this, "提示", tip, QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+            {
+                QString data = act->objectName() + '\r' + user;
+                TextMessage tm("ADMN",data);
+
+                m_client.send(tm);
+            }
+        }else
+        {
+            QMessageBox::information(this, "提示", "请选择聊天成员!");
+        }
+    }
+}
+
+void MainWin::listWidgetContextMenu(const QPoint&)
+{
+    if( m_level == "admin" )
+    {
+        listWidgetMenu.exec(QCursor::pos());
+    }
 }
 
 void MainWin::logInOutBtnClicked()
@@ -119,11 +148,34 @@ void MainWin::DSCN_Handler(QTcpSocket& obj, TextMessage& message)
     setCtrlEnable(false);
 
     inputGrpBx.setTitle("用户名");
+
+    m_level = "";
 }
 void MainWin::LIOK_Handler(QTcpSocket& obj, TextMessage& message)
 {
-    setCtrlEnable(true);
-    inputGrpBx.setTitle(message.data());
+    QStringList rl = message.data().split("\r", QString::SkipEmptyParts);
+    QString id = rl[0];
+    QString status = rl[1];
+
+    m_level = rl[2];
+
+    if( status == "silent" )
+    {
+        setCtrlEnable("true");
+        inputGrpBx.setTitle(id);
+        inputEdit.setEnabled(false);
+        sendBtn.setEnabled(false);
+    }else if( status == "kick")
+    {
+        m_client.close();
+        QMessageBox::information(this, "提示", "账号 [" + id + "] 被禁止登录");
+    }else
+    {
+        setCtrlEnable(true);
+        inputGrpBx.setTitle(id);
+    }
+//    setCtrlEnable(true);
+//    inputGrpBx.setTitle(message.data());
 }
 
 void MainWin::LIER_Handler(QTcpSocket& obj, TextMessage& message)
@@ -162,6 +214,26 @@ void MainWin::USER_Handler(QTcpSocket& obj, TextMessage& message)
                 item->setCheckState(Qt::Checked);
             }
         }
+    }
+}
+
+void MainWin::CTRL_Handler(QTcpSocket& obj, TextMessage& message)
+{
+    if( message.data() == "silent")
+    {
+        QMessageBox::information(this, "提示", "你已经被管理员禁言！");
+        inputEdit.clear();
+        inputEdit.setEnabled(false);
+        sendBtn.setEnabled(false);
+    }else if( message.data() == "recover")
+    {
+        QMessageBox::information(this, "提示", "管理员恢复你的聊天权限！");
+        inputEdit.setEnabled(true);
+        sendBtn.setEnabled(true);
+    }else if( message.data() == "kick")
+    {
+//        QMessageBox::information(this, "提示", "账号 [" , + inputGrpBx.title() + "] 被禁止登录聊天室");
+        m_client.close();
     }
 }
 

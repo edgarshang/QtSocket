@@ -15,9 +15,11 @@ class ServerHandler : public TxtMsgHandler
     {
         QString id;
         QString pwd;
+        QString status;
+        QString level;
         QTcpSocket* socket;
     public:
-        Node():id(""), pwd(""), socket(NULL)
+        Node():id(""), pwd(""), status("ok"), level("user"), socket(NULL)
         {
 
         }
@@ -34,6 +36,7 @@ class ServerHandler : public TxtMsgHandler
     void LGIN_Handler(QTcpSocket&, TextMessage&);
     void MSGA_Handler(QTcpSocket&, TextMessage&);
     void MSGP_Handler(QTcpSocket&, TextMessage&);
+    void ADMN_Handler(QTcpSocket&, TextMessage&);
 
 public:
     ServerHandler();
