@@ -136,6 +136,7 @@ void MainWin::handle(QTcpSocket &obj, TextMessage &message)
 void MainWin::MSGA_Handler(QTcpSocket& obj, TextMessage& message)
 {
     msgEditor.appendPlainText(message.data());
+    activateWindow();
 }
 
 void MainWin::CONN_Handler(QTcpSocket& obj, TextMessage& message)
