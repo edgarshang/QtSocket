@@ -2,6 +2,23 @@
 #include <QMessageBox>
 #include <QDebug>
 
+static bool ValidateUserID(QString id)
+{
+    bool ret = true;
+    QString invalid = "~`!@#$%^&*()_-+={}[]|\\'\",.?/<>";
+
+    for( int i = 0; i < invalid.length(); i++)
+    {
+        if( id.contains(invalid[i]))
+        {
+            ret = false;
+            break;
+        }
+    }
+
+    return ret;
+}
+
 void MainWin::initMember()
 {
     m_client.setHandler(this);
@@ -15,7 +32,24 @@ void MainWin::initMember()
     MapToHandler(MSGA);
     MapToHandler(USER);
     MapToHandler(CTRL);
+}
 
+
+bool MainWin::eventFilter(QObject *obj, QEvent *evt)
+{
+    if( (obj == &inputEdit) && (evt->type() == QEvent::KeyPress) )
+    {
+        QKeyEvent* ke = dynamic_cast<QKeyEvent*>(evt);
+
+        if( ke->text() == "\r")
+        {
+            sendBtnClicked();
+
+            return true;
+        }
+    }
+
+    return QWidget::eventFilter(obj, evt);
 }
 
 QString MainWin::getCheckedUserId()
@@ -101,6 +135,7 @@ void MainWin::logInOutBtnClicked()
 {
     if(!m_client.isValid())
     {
+        loginDlg.setValFunc(ValidateUserID);
         if(loginDlg.exec() == QDialog::Accepted)
         {
             QString usr = loginDlg.getUser().trimmed();

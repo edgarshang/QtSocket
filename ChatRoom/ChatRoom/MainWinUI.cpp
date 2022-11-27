@@ -56,6 +56,7 @@ void MainWin::initInputGrpBx()
 
     inputEdit.setFixedHeight(100);
     inputEdit.setEnabled(false);
+    inputEdit.installEventFilter(this);
     statusLbl.setText("状态：未登录");
     logInOutBtn.setFixedHeight(50);
     logInOutBtn.setText("登陆");

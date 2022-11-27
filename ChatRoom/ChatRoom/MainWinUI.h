@@ -53,6 +53,8 @@ class MainWin : public QWidget, public TxtMsgHandler
     void MSGA_Handler(QTcpSocket& obj, TextMessage& message);
     void USER_Handler(QTcpSocket& obj, TextMessage& message);
     void CTRL_Handler(QTcpSocket& obj, TextMessage& message);
+protected:
+    bool eventFilter(QObject*, QEvent*);
 private slots:
     void sendBtnClicked();
     void logInOutBtnClicked();

@@ -95,9 +95,11 @@ void ServerHandler::CONN_Handler(QTcpSocket& obj, TextMessage& message)
 }
 void ServerHandler::DSCN_Handler(QTcpSocket& obj, TextMessage& message)
 {
+    Node* n  = NULL;
+
     for(int i = 0; i < m_nodeList.length(); i++)
     {
-        Node* n = m_nodeList.at(i);
+        n = m_nodeList.at(i);
 
         if(n->socket == &obj)
         {
@@ -108,6 +110,13 @@ void ServerHandler::DSCN_Handler(QTcpSocket& obj, TextMessage& message)
 
     TextMessage tm("USER", getOnlineUserID());
     sentToAllOnlineUser(tm);
+
+    if( n != NULL )
+    {
+        TextMessage tm("MSGA", "[系统消息]\n =============== [ " + n->id + " ] 退出聊天室===============\n");
+        sentToAllOnlineUser(tm);
+
+    }
 }
 void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
 {
@@ -171,8 +180,13 @@ void ServerHandler::LGIN_Handler(QTcpSocket& obj, TextMessage& message)
 
     if( result == "LIOK")
     {
-        TextMessage tm("USER", getOnlineUserID());
-        sentToAllOnlineUser(tm);
+        TextMessage user("USER", getOnlineUserID());
+        sentToAllOnlineUser(user);
+
+
+        TextMessage msga("MSGA", "[系统消息]\n =============== [ " + id + " ] 上线了===============\n");
+        sentToAllOnlineUser(msga);
+
     }
 }
 
